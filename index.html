@@ -271,16 +271,16 @@
             <input type="color" id="colorPicker" value="#000000" title="更多颜色" />
           </div>
           <button id="resetColorBtn"
-            style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #6c757d, #868e96); border: none; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin: 0;">重置颜色</button>
+            style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #6c757d, #868e96); border: none; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin: 0;">重置选择字符的颜色</button>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 10px;">
           <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
             <label>字号增量：</label>
-            <input type="range" id="fontSize" min="-36" max="36" value="0" />
+            <input type="range" id="fontSize" min="-34" max="36" value="0" />
             <span id="fontSizeValue">0</span>
           </div>
           <button id="resetFontSizeBtn"
-            style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #6c757d, #868e96); border: none; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin: 0;">重置字号</button>
+            style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #6c757d, #868e96); border: none; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin: 0;">重置选择字符的字号</button>
         </div>
       </div>
 
@@ -507,11 +507,24 @@
           // 使用初始字号 + 增量，而不是当前字号 + 增w量
           let initialSize = initialFontSizes[i] || 35;
           // 计算新字号，确保在 1-72 范围内
-          let newSize = Math.max(2, Math.min(71, initialSize + increment));
+          let newSize = Math.max(1, Math.min(71, initialSize + increment));
           spans[i].style.fontSize = newSize + 'px';
         }
       }
 
+      updateStyledTextSource();
+    }
+
+    function resetSize() {
+      const range = getSelectedSpanRange();
+      if (!range) return;
+      let spans = document.getElementById('styledText').childNodes;
+      for (let i = range.start; i < range.end; i++) {
+        if (spans[i]) {
+          spans[i].style.fontSize = 35 + 'px';
+          initialFontSizes[i] = 35; // 更新初始字号记录,这样滑块就基于35来计算
+        }
+      }
       updateStyledTextSource();
     }
 
@@ -581,11 +594,7 @@
     }, { passive: true });
 
     // 重置字号按钮：将增量重置为0
-    document.getElementById('resetFontSizeBtn').onclick = function () {
-      document.getElementById('fontSize').value = '0';
-      document.getElementById('fontSizeValue').textContent = '0';
-      // 不需要调用 applySize，因为增量为0不会改变任何东西
-    };
+    document.getElementById('resetFontSizeBtn').onclick = resetSize;
 
     // 重置颜色按钮
     document.getElementById('resetColorBtn').onclick = function () {
@@ -603,30 +612,47 @@
     function updateStyledTextSource() {
       let spans = document.querySelectorAll('#styledText span');
       let html = '';
-      let curColor = defaultColor;
-      let curSize = defaultFontSize;
-      let buffer = '';
 
-      spans.forEach((span, idx) => {
-        let c = rgbToHex(span.style.color);
-        let s = span.style.fontSize.replace('px', '');
+      // 将连续的span按字号分组
+      let groups = [];
+      let currentGroup = null;
 
-        if (c === curColor && s === curSize) {
-          buffer += span.textContent;
-        } else {
-          html += `<size=${curSize}><color=${curColor}>${buffer}</color></size>`;
-          curColor = c;
-          curSize = s;
-          buffer = span.textContent;
+      spans.forEach((span) => {
+        let size = span.style.fontSize.replace('px', '');
+        let color = rgbToHex(span.style.color);
+        let char = span.textContent;
+
+        if (!currentGroup || currentGroup.size !== size) {
+          // 新建一个字号组
+          currentGroup = { size: size, items: [] };
+          groups.push(currentGroup);
         }
 
-        if (idx === spans.length - 1) {
-          html += `<size=${curSize}><color=${curColor}>${buffer}</color></size>`;
+        // 在当前字号组内,按颜色合并
+        let lastItem = currentGroup.items[currentGroup.items.length - 1];
+        if (lastItem && lastItem.color === color) {
+          lastItem.text += char;
+        } else {
+          currentGroup.items.push({ color: color, text: char });
         }
       });
 
-      html = html.replace(/<size=35>(.*?)<\/size>/g, '$1');
-      html = html.replace(/<color=#000000>(.*?)<\/color>/g, '$1');
+      // 生成HTML
+      groups.forEach(group => {
+        let sizeTag = group.size !== defaultFontSize ? `<size=${group.size}>` : '';
+        let sizeCloseTag = group.size !== defaultFontSize ? `</size>` : '';
+
+        let innerHtml = '';
+        group.items.forEach(item => {
+          if (item.color !== defaultColor) {
+            innerHtml += `<color=${item.color}>${item.text}</color>`;
+          } else {
+            innerHtml += item.text;
+          }
+        });
+
+        html += sizeTag + innerHtml + sizeCloseTag;
+      });
 
       let output = document.getElementById('styledTextSource');
       output.value = html;
