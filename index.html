@@ -1,313 +1,604 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>厨房名字改颜色与大小工具</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-        background: linear-gradient(135deg, #f9fafb, #eef2f3);
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-        color: #333;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>胡闹厨房名字改颜色与大小工具</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #e8ecf1);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 100%;
+      background: #fff;
+      border-radius: 0;
+      box-shadow: none;
+      margin: 0;
+      padding: 40px 50px;
+      animation: fadeIn 0.6s ease;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
 
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 42px;
+      color: #1b6ac9;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 18px;
+      margin-bottom: 35px;
+    }
+
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 2px solid #e1e5eb;
+      border-radius: 16px;
+      font-size: 30px;
+      padding: 18px 20px;
+      resize: none;
+      background: #ffffff;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #1b6ac9;
+      box-shadow: 0 0 0 3px rgba(27, 106, 201, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .editorArea {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .popup {
+      margin-top: 25px;
+      padding: 22px;
+      border-radius: 15px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .color-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 2px solid #ddd;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+      padding: 0;
+      margin: 0;
+    }
+
+    .color-btn:hover {
+      transform: scale(1.15);
+      border-color: #1b6ac9;
+    }
+
+    .color-btn.active {
+      border-color: #1b6ac9;
+      box-shadow: 0 0 6px rgba(27, 106, 201, 0.5);
+    }
+
+    #styledText {
+      margin-top: 25px;
+      min-height: 80px;
+      padding: 20px;
+      border: 1px dashed #bbb;
+      border-radius: 15px;
+      font-size: 35px;
+      background: #fafafa;
+      user-select: text;
+      white-space: pre-wrap;
+      letter-spacing: 1px;
+    }
+
+    #styledText span {
+      user-select: text;
+    }
+
+    #styledTextSource {
+      margin-top: 15px;
+      border-radius: 10px;
+      font-size: 17px;
+      padding: 12px;
+      resize: vertical;
+      min-height: 80px;
+      max-height: 400px;
+      background: #fefefe;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    #warning {
+      margin-top: 8px;
+      font-size: 16px;
+      color: #d93025;
+      font-weight: bold;
+      display: none;
+    }
+
+    button {
+      display: inline-block;
+      margin-top: 18px;
+      background: linear-gradient(135deg, #1b6ac9, #3d8bff);
+      border: none;
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 6px rgba(27, 106, 201, 0.2);
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #1760b3, #2c78ff);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(27, 106, 201, 0.25);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 5px rgba(27, 106, 201, 0.2);
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 768px) {
       .container {
-        width: 85%;
-        max-width: 1000px;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        margin-top: 40px;
-        padding: 30px 40px;
+        padding: 20px 15px;
       }
 
       h1 {
-        text-align: center;
-        font-size: 40px;
-        color: #1b6ac9;
-        margin-bottom: 10px;
+        font-size: 28px;
       }
 
       .subtitle {
-        text-align: center;
-        color: #777;
-        font-size: 18px;
-        margin-bottom: 30px;
-      }
-
-      label {
-        display: block;
-        margin: 10px 0;
+        font-size: 14px;
       }
 
       textarea {
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 15px;
-        font-size: 30px;
-        padding: 15px;
-        resize: none;
-        transition: all 0.3s;
-      }
-
-      textarea:focus {
-        outline: none;
-        border-color: #1b6ac9;
-        box-shadow: 0 0 8px rgba(27, 106, 201, 0.4);
-      }
-
-      .popup {
-        margin-top: 25px;
-        padding: 20px;
-        border-radius: 15px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .popup label {
-        font-weight: 600;
-        color: #444;
-      }
-
-      #colorPicker,
-      #fontSize {
-        margin-left: 10px;
+        font-size: 20px;
+        padding: 12px 15px;
       }
 
       #styledText {
-        margin-top: 25px;
-        min-height: 80px;
+        font-size: 24px;
         padding: 15px;
-        border: 1px dashed #ccc;
-        border-radius: 15px;
-        font-size: 35px;
-        background: #fafafa;
       }
 
-      #styledTextSource {
-        margin-top: 15px;
-        border-radius: 10px;
-        font-size: 16px;
-        padding: 10px;
-        resize: none;
-        height: 100px;
-        background: #fdfdfd;
+      .popup {
+        padding: 15px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .popup>div {
+        width: 100% !important;
+        margin-top: 0 !important;
+      }
+
+      .color-palette {
+        flex-wrap: wrap;
       }
 
       button {
-        display: inline-block;
-        margin-top: 15px;
-        background: linear-gradient(135deg, #1b6ac9, #3888ff);
-        border: none;
-        color: #fff;
-        padding: 12px 28px;
-        border-radius: 12px;
-        font-size: 18px;
-        cursor: pointer;
-        transition: all 0.2s;
+        padding: 12px 24px;
+        font-size: 16px;
       }
 
-      button:hover {
-        background: linear-gradient(135deg, #1760b3, #2e7aff);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(27, 106, 201, 0.3);
-      }
-
-      .footer {
-        text-align: center;
+      #styledTextSource {
         font-size: 14px;
-        color: #666;
-        margin-top: 40px;
       }
+    }
+  </style>
+</head>
 
-      .counter {
-        text-align: center;
-        margin-top: 20px;
-        color: #444;
-      }
-
-      a {
-        color: #1b6ac9;
-        text-decoration: none;
-        font-weight: 600;
-      }
-
-      a:hover {
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="container">
-      <h1>厨房名字改颜色与大小工具</h1>
-      <div class="subtitle">
-        制作者:
-        <a href="https://space.bilibili.com/298411931" target="_blank"
-          >Bilibili：Azhe是阿哲</a
-        >
-      </div>
-
-      <label>使用方法：</label>
-        <p style="color: #444; line-height: 1.8">
-        在下方输入你的名字 → 选中想要修改的文字 → 在下面调整颜色与字号 → 点击“立即复制”，粘贴到MOD菜单里即可。<br><br>
-        <b style="color: #1b6ac9">注意事项：</b><br>
-        ・每次修改输入框内容后，所有样式都会重置。<br>
-        ・如果在选中文字时拖拽过多，也可能导致样式重置。<br>
-        ・修改完样式后，请点击输入框外任意位置取消选中，再进行下一次操作。<br>
-        ・重复以上步骤即可对不同字符应用不同样式。<br>
-        ・粘贴到MOD菜单时，请注意打开修改名字开关！
-        </p>
-
-
-      <textarea
-        id="textInput"
-        placeholder="在这里输入待修改的名字..."
-      ></textarea>
-
-      <div class="popup">
-        <label for="colorPicker">颜色：</label>
-        <input type="color" id="colorPicker" value="#000000" />
-
-        <label for="fontSize">字号：</label>
-        <input type="range" id="fontSize" min="2" max="70" value="35" />
-        <span id="fontSizeValue">35</span> px
-      </div>
-
-      <div id="styledText">这里显示预览...</div>
-      <textarea
-        id="styledTextSource"
-        placeholder="样式化文本源码（点击下方复制）"
-      ></textarea>
-      <button onclick="copyToClipboard()">立即复制</button>
-
-      <div class="footer">本工具仅支持电脑端使用，手机暂不兼容。</div>
-      <div class="counter">
-        <a href="https://hits.sh/ch3ngyz.github.io/oc2_change_colorful_name.html/"><img alt="Hits" src="https://hits.sh/ch3ngyz.github.io/oc2_change_colorful_name.html.svg?style=for-the-badge&label=%E6%9C%AC%E7%BD%91%E7%AB%99%E8%AE%BF%E9%97%AE%E6%80%BB%E6%95%B0"/></a>
-      </div>
+<body>
+  <div class="container">
+    <h1 id="mainTitle">厨房名字改颜色与大小工具</h1>
+    <div class="subtitle" id="mainSubtitle">制作：Azhe是阿哲</div>
+    <textarea id="textInput" placeholder="在这里输入待修改的名字..."></textarea>
+    <div style="display:flex; justify-content:center; gap:100px; margin-top:20px;">
+      <button id="startEditBtn">开始自定义</button>
     </div>
 
-    <script>
-      window.addEventListener('DOMContentLoaded', updateFontValue)
-      window.addEventListener('resize', updateFontValue)
 
-      var defaultColor = '#000000'
-      var defaultFontSize = '35px'
+    <div id="editorArea" class="editorArea">
+      <div class="section-title">1.选择要修改的文字:</div>
+      <div id="styledText"></div>
 
-      function applyStyle() {
-        var textInput = document.getElementById('textInput')
-        var start = textInput.selectionStart
-        var end = textInput.selectionEnd
-        var color = document.getElementById('colorPicker').value
-        var fontSize = document.getElementById('fontSize').value
-        var styledText = document.getElementById('styledText').childNodes
-        for (var i = start; i < end; i++) {
-          if (styledText[i]) {
-            styledText[i].style.color = color
-            styledText[i].style.fontSize = fontSize + 'px'
-          }
-        }
+      <div class="section-title">2.调整样式:</div>
+      <div class="popup">
+        <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+            <label>颜色：</label>
+            <div class="color-palette" id="colorPalette"></div>
+            <label>更多颜色：</label>
+            <input type="color" id="colorPicker" value="#000000" title="更多颜色" />
+          </div>
+          <button id="resetColorBtn"
+            style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #6c757d, #868e96); border: none; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin: 0;">重置颜色</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+            <label>字号：</label>
+            <input type="range" id="fontSize" min="2" max="70" value="35" />
+            <span id="fontSizeValue">35</span> px
+          </div>
+          <button id="resetFontSizeBtn"
+            style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #6c757d, #868e96); border: none; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin: 0;">重置字号</button>
+        </div>
+      </div>
+
+      <div class="section-title">3.生成的颜色代码:</div>
+      <textarea id="styledTextSource" placeholder="样式化文本源码"></textarea>
+      <div id="warning">字符超出 127，粘贴到 MOD 时会被截断！请选择一部分文字重置颜色或字号！</div>
+      <div style="display:flex; justify-content:center; gap:100px; margin-top:20px;">
+        <button id="resetInputBtn" style="display:none;">返回修改输入!</button>
+        <button id="copyBtn" onclick="copyToClipboard()">立即复制代码!</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var defaultColor = '#000000';
+    var defaultFontSize = '35';
+
+    // 常用颜色列表
+    var colorList = [
+      '#000000', '#ffffff', '#ff0000', '#ff6600', '#ffcc00',
+      '#33cc33', '#00ccff', '#0066ff', '#9933ff', '#ff66cc',
+      '#666666', '#cccccc', '#990000', '#996600', '#999900',
+      '#006600', '#006666', '#000099', '#660066', '#cc0066'
+    ];
+
+    // 记录当前的选中范围 {start, end}
+    var currentSelectionRange = null;
+    var isProgrammaticSelectionClear = false;
+
+    // 初始化颜色面板
+    (function initColorPalette() {
+      var palette = document.getElementById('colorPalette');
+      colorList.forEach(function (color) {
+        var btn = document.createElement('button');
+        btn.className = 'color-btn' + (color === defaultColor ? ' active' : '');
+        btn.style.background = color;
+
+        // 按下颜色按钮时，如果有选中文字，先清除选中区，以便预览
+        btn.onmousedown = function (e) {
+          saveSelection();
+          clearVisualSelection();
+        };
+
+        btn.onclick = function () {
+          document.getElementById('colorPicker').value = color;
+          document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyColor();
+        };
+        palette.appendChild(btn);
+      });
+    })();
+
+    document.getElementById('startEditBtn').onclick = () => {
+      const text = document.getElementById('textInput').value.trim();
+      if (!text) return alert("请输入名字！");
+
+      document.getElementById('textInput').style.display = 'none';
+      document.getElementById('startEditBtn').style.display = 'none';
+      document.getElementById('resetInputBtn').style.display = 'inline-block';
+      document.getElementById('editorArea').style.display = 'block';
+      document.getElementById('mainTitle').style.display = 'none';
+      document.getElementById('mainSubtitle').style.display = 'none';
+
+      renderSpanText(text);
+    };
+
+    document.getElementById('resetInputBtn').onclick = () => {
+      document.getElementById('textInput').style.display = 'block';
+      document.getElementById('startEditBtn').style.display = 'inline-block';
+      document.getElementById('resetInputBtn').style.display = 'none';
+
+      document.getElementById('editorArea').style.display = 'none';
+      document.getElementById('styledText').innerHTML = '';
+      document.getElementById('styledTextSource').value = '';
+      document.getElementById('warning').style.display = 'none';
+      document.getElementById('mainTitle').style.display = 'block';
+      document.getElementById('mainSubtitle').style.display = 'block';
+      currentSelectionRange = null;
+    };
+
+    function renderSpanText(text) {
+      let container = document.getElementById('styledText');
+      container.innerHTML = '';
+
+      for (let ch of text) {
+        let span = document.createElement('span');
+        span.textContent = ch;
+        span.style.color = defaultColor;
+        span.style.fontSize = defaultFontSize + 'px';
+        container.appendChild(span);
       }
+      updateStyledTextSource();
+    }
 
-      function updateStyledText() {
-        var textInput = document.getElementById('textInput').value
-        var container = document.getElementById('styledText')
-        container.innerHTML = ''
-        for (var i = 0; i < textInput.length; i++) {
-          var span = document.createElement('span')
-          span.textContent = textInput[i]
-          span.style.color = defaultColor
-          span.style.fontSize = defaultFontSize
-          container.appendChild(span)
-        }
-        applyStyle()
-        updateStyledTextSource()
-      }
+    // 监听选区变化，实时记录选中了哪些 span
+    document.addEventListener('selectionchange', () => {
+      if (isProgrammaticSelectionClear) return;
 
-      document
-        .getElementById('textInput')
-        .addEventListener('input', updateStyledText)
-      document.getElementById('colorPicker').addEventListener('input', () => {
-        applyStyle()
-        updateStyledTextSource()
-      })
-      document.getElementById('fontSize').addEventListener('input', e => {
-        document.getElementById('fontSizeValue').textContent = e.target.value
-        applyStyle()
-        updateStyledTextSource()
-      })
+      // 获取当前浏览器选区
+      const range = getBrowserSelectionRange();
 
-      function updateStyledTextSource() {
-        var styledTextSource = document.getElementById('styledTextSource')
-        var styledTextDiv = document.getElementById('styledText')
-        var styledText = styledTextDiv.childNodes
-        var html = ''
-        var currentFontSize = defaultFontSize
-        var currentColor = defaultColor
-        var buffer = ''
+      // 只有当选区在编辑器内部时才更新 currentSelectionRange
+      // 如果选区移到外部（如点击按钮），保持之前的选区不变
+      if (range !== null) {
+        currentSelectionRange = range;
 
-        styledText.forEach((node, i) => {
-          var color = rgbToHex(node.style.color || defaultColor)
-          var size = node.style.fontSize || defaultFontSize
-          size = size.replace('px', '')
+        // 同步字号滑块和颜色选择器：获取选中的第一个字符的样式
+        const container = document.getElementById('styledText');
+        if (container && container.childNodes[range.start]) {
+          const firstSpan = container.childNodes[range.start];
 
-          if (color === currentColor && size === currentFontSize) {
-            buffer += node.textContent
-          } else {
-            if (buffer) {
-              html += `<size=${currentFontSize}><color=${currentColor}>${buffer}</color></size>`
-              buffer = ''
+          // 同步字号
+          const currentSize = firstSpan.style.fontSize.replace('px', '');
+          document.getElementById('fontSize').value = currentSize;
+          document.getElementById('fontSizeValue').textContent = currentSize;
+
+          // 同步颜色
+          const currentColor = rgbToHex(firstSpan.style.color);
+          document.getElementById('colorPicker').value = currentColor;
+
+          // 更新颜色面板的激活状态
+          document.querySelectorAll('.color-btn').forEach(btn => {
+            if (btn.style.background === currentColor || rgbToHex(btn.style.background) === currentColor) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
             }
-            currentFontSize = size
-            currentColor = color
-            buffer += node.textContent
-          }
+          });
+        }
+      }
+      // 如果 range 为 null，说明选区不在编辑器内或已清空
+      // 此时不更新 currentSelectionRange，保持上一次的有效选区
+    });
 
-          if (i === styledText.length - 1) {
-            html += `<size=${currentFontSize}><color=${currentColor}>${buffer}</color></size>`
-          }
-        })
+    // 获取浏览器当前的选中 span 范围，如果不合法返回 null
+    function getBrowserSelectionRange() {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return null;
 
-        html = html.replace(/<size=35>(.*?)<\/size>/g, '$1')
-        html = html.replace(/<color=#000000>(.*?)<\/color>/g, '$1')
-        styledTextSource.value = html
+      const range = selection.getRangeAt(0);
+      const container = document.getElementById('styledText');
+
+      if (!container.contains(range.startContainer) ||
+        !container.contains(range.endContainer)) return null;
+
+      if (selection.isCollapsed) return null;
+
+      const spans = Array.from(container.childNodes);
+      const startSpan = range.startContainer.nodeType === 3 ?
+        range.startContainer.parentNode : range.startContainer;
+      const endSpan = range.endContainer.nodeType === 3 ?
+        range.endContainer.parentNode : range.endContainer;
+
+      let start = spans.indexOf(startSpan);
+      let end = spans.indexOf(endSpan) + 1;
+
+      if (start === -1 || spans.indexOf(endSpan) === -1) return null;
+
+      return { start, end };
+    }
+
+    function getSelectedSpanRange() {
+      const browserRange = getBrowserSelectionRange();
+      if (browserRange) return browserRange;
+      return currentSelectionRange;
+    }
+
+    function saveSelection() {
+      const r = getBrowserSelectionRange();
+      if (r) currentSelectionRange = r;
+    }
+
+    function clearVisualSelection() {
+      if (window.getSelection) {
+        isProgrammaticSelectionClear = true;
+        window.getSelection().removeAllRanges();
+        setTimeout(() => isProgrammaticSelectionClear = false, 10);
+      }
+    }
+
+    function rgbToHex(rgb) {
+      if (rgb.startsWith("#")) return rgb;
+      const m = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (!m) return "#000000";
+
+      return "#" + m.slice(1).map(x =>
+        ("0" + parseInt(x).toString(16)).slice(-2)
+      ).join("");
+    }
+
+    // 只应用颜色，不改变字号
+    function applyColor() {
+      const range = getSelectedSpanRange();
+      if (!range) return;
+
+      let spans = document.getElementById('styledText').childNodes;
+      let color = document.getElementById('colorPicker').value;
+
+      for (let i = range.start; i < range.end; i++) {
+        if (spans[i]) {
+          spans[i].style.color = color;
+        }
       }
 
-      function rgbToHex(rgb) {
-        if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb
-        var res = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(rgb)
-        if (!res) return '#000000'
-        return (
-          '#' +
-          res
-            .slice(1)
-            .map(x => ('0' + parseInt(x).toString(16)).slice(-2))
-            .join('')
-        )
+      updateStyledTextSource();
+    }
+
+    // 只应用字号，不改变颜色
+    function applySize() {
+      const range = getSelectedSpanRange();
+      if (!range) return;
+
+      let spans = document.getElementById('styledText').childNodes;
+      let size = document.getElementById('fontSize').value;
+
+      for (let i = range.start; i < range.end; i++) {
+        if (spans[i]) {
+          spans[i].style.fontSize = size + 'px';
+        }
       }
 
-      function copyToClipboard() {
-        var text = document.getElementById('styledTextSource')
-        text.select()
-        document.execCommand('copy')
-        alert('✅ 已复制到剪贴板！')
-      }
+      updateStyledTextSource();
+    }
 
-      function updateFontValue() {
-        document.getElementById('fontSizeValue').textContent =
-          document.getElementById('fontSize').value
+    const colorPicker = document.getElementById('colorPicker');
+    colorPicker.addEventListener('mousedown', function () {
+      saveSelection();
+      clearVisualSelection();
+    });
+    colorPicker.oninput = function () {
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      applyColor();
+    };
+
+    const fontSizeInput = document.getElementById('fontSize');
+    fontSizeInput.addEventListener('mousedown', function () {
+      saveSelection();
+      clearVisualSelection();
+    });
+    fontSizeInput.addEventListener('touchstart', function () {
+      saveSelection();
+      clearVisualSelection();
+    }, { passive: true });
+
+    fontSizeInput.oninput = function (e) {
+      document.getElementById('fontSizeValue').textContent = e.target.value;
+      applySize();
+    };
+
+    // 重置字号按钮
+    document.getElementById('resetFontSizeBtn').onclick = function () {
+      document.getElementById('fontSize').value = '35';
+      document.getElementById('fontSizeValue').textContent = '35';
+      applySize();
+    };
+
+    // 重置颜色按钮
+    document.getElementById('resetColorBtn').onclick = function () {
+      document.getElementById('colorPicker').value = '#000000';
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.color-btn')[0].classList.add('active'); // 激活黑色按钮
+      applyColor();
+    };
+
+    document.getElementById('styledTextSource').oninput = function () {
+      let warning = document.getElementById('warning');
+      warning.style.display = this.value.length > 127 ? 'block' : 'none';
+    };
+
+    function updateStyledTextSource() {
+      let spans = document.querySelectorAll('#styledText span');
+      let html = '';
+      let curColor = defaultColor;
+      let curSize = defaultFontSize;
+      let buffer = '';
+
+      spans.forEach((span, idx) => {
+        let c = rgbToHex(span.style.color);
+        let s = span.style.fontSize.replace('px', '');
+
+        if (c === curColor && s === curSize) {
+          buffer += span.textContent;
+        } else {
+          html += `<size=${curSize}><color=${curColor}>${buffer}</color></size>`;
+          curColor = c;
+          curSize = s;
+          buffer = span.textContent;
+        }
+
+        if (idx === spans.length - 1) {
+          html += `<size=${curSize}><color=${curColor}>${buffer}</color></size>`;
+        }
+      });
+
+      html = html.replace(/<size=35>(.*?)<\/size>/g, '$1');
+      html = html.replace(/<color=#000000>(.*?)<\/color>/g, '$1');
+
+      let output = document.getElementById('styledTextSource');
+      output.value = html;
+
+      let warning = document.getElementById('warning');
+      let copyBtn = document.getElementById('copyBtn');
+
+      if (html.length > 127) {
+        warning.style.display = 'block';
+        copyBtn.style.display = 'none';
+      } else {
+        warning.style.display = 'none';
+        copyBtn.style.display = 'inline-block';
       }
-    </script>
-  </body>
+    }
+
+    function copyToClipboard() {
+      let text = document.getElementById('styledTextSource');
+      text.select();
+      document.execCommand('copy');
+      alert('已复制，可粘贴到MOD菜单！');
+    }
+  </script>
+</body>
+
 </html>
