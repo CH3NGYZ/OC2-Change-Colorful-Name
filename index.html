@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>胡闹厨房名字改颜色与大小工具</title>
+  <!-- 网页图标 - 请替换下面的base64字符串为你的图标 -->
+  <link rel="icon" type="image/png" href="img/logo.jpg" />
   <style>
     body {
       font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
@@ -25,7 +27,7 @@
       border-radius: 0;
       box-shadow: none;
       margin: 0;
-      padding: 40px 50px;
+      padding: 20px 50px;
       animation: fadeIn 0.6s ease;
       min-height: 100vh;
       box-sizing: border-box;
@@ -79,7 +81,7 @@
 
     .editorArea {
       display: none;
-      margin-top: 20px;
+      margin-top: 0px;
     }
 
     .popup {
@@ -263,7 +265,7 @@
       <div class="popup">
         <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
           <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-            <label>颜色：</label>
+            <label>选择颜色：</label>
             <div class="color-palette" id="colorPalette"></div>
             <label>更多颜色：</label>
             <input type="color" id="colorPicker" value="#000000" title="更多颜色" />
@@ -273,20 +275,20 @@
         </div>
         <div style="display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 10px;">
           <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-            <label>字号：</label>
-            <input type="range" id="fontSize" min="2" max="70" value="35" />
-            <span id="fontSizeValue">35</span> px
+            <label>字号增量：</label>
+            <input type="range" id="fontSize" min="-36" max="36" value="0" />
+            <span id="fontSizeValue">0</span>
           </div>
           <button id="resetFontSizeBtn"
             style="padding: 6px 12px; font-size: 14px; background: linear-gradient(135deg, #6c757d, #868e96); border: none; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin: 0;">重置字号</button>
         </div>
       </div>
 
-      <div class="section-title">3.生成的颜色代码:</div>
+      <div class="section-title">3.生成的名字代码:</div>
       <textarea id="styledTextSource" placeholder="样式化文本源码"></textarea>
       <div id="warning">字符超出 127，粘贴到 MOD 时会被截断！请选择一部分文字重置颜色或字号！</div>
-      <div style="display:flex; justify-content:center; gap:100px; margin-top:20px;">
-        <button id="resetInputBtn" style="display:none;">返回修改输入!</button>
+      <div style="display:flex; justify-content:center; gap:100px; margin-top:10px;">
+        <button id="resetInputBtn" style="display:none;">返回修改名字!</button>
         <button id="copyBtn" onclick="copyToClipboard()">立即复制代码!</button>
       </div>
     </div>
@@ -307,6 +309,7 @@
     // 记录当前的选中范围 {start, end}
     var currentSelectionRange = null;
     var isProgrammaticSelectionClear = false;
+    var initialFontSizes = {}; // 记录选中文字的初始字号
 
     // 初始化颜色面板
     (function initColorPalette() {
@@ -386,15 +389,19 @@
       if (range !== null) {
         currentSelectionRange = range;
 
-        // 同步字号滑块和颜色选择器：获取选中的第一个字符的样式
+        // 记录选中文字的初始字号
         const container = document.getElementById('styledText');
+        initialFontSizes = {};
+        for (let i = range.start; i < range.end; i++) {
+          if (container.childNodes[i]) {
+            const currentSize = parseInt(container.childNodes[i].style.fontSize.replace('px', '')) || 35;
+            initialFontSizes[i] = currentSize;
+          }
+        }
+
+        // 同步字号滑块和颜色选择器：获取选中的第一个字符的样式
         if (container && container.childNodes[range.start]) {
           const firstSpan = container.childNodes[range.start];
-
-          // 同步字号
-          const currentSize = firstSpan.style.fontSize.replace('px', '');
-          document.getElementById('fontSize').value = currentSize;
-          document.getElementById('fontSizeValue').textContent = currentSize;
 
           // 同步颜色
           const currentColor = rgbToHex(firstSpan.style.color);
@@ -487,17 +494,21 @@
       updateStyledTextSource();
     }
 
-    // 只应用字号，不改变颜色
+    // 应用字号增量，不改变颜色
     function applySize() {
       const range = getSelectedSpanRange();
       if (!range) return;
 
       let spans = document.getElementById('styledText').childNodes;
-      let size = document.getElementById('fontSize').value;
+      let increment = parseInt(document.getElementById('fontSize').value);
 
       for (let i = range.start; i < range.end; i++) {
         if (spans[i]) {
-          spans[i].style.fontSize = size + 'px';
+          // 使用初始字号 + 增量，而不是当前字号 + 增w量
+          let initialSize = initialFontSizes[i] || 35;
+          // 计算新字号，确保在 1-72 范围内
+          let newSize = Math.max(2, Math.min(71, initialSize + increment));
+          spans[i].style.fontSize = newSize + 'px';
         }
       }
 
@@ -529,11 +540,51 @@
       applySize();
     };
 
-    // 重置字号按钮
+    // 松开鼠标后自动重置滑块到0，并更新初始字号为当前字号
+    fontSizeInput.addEventListener('mouseup', function () {
+      setTimeout(() => {
+        // 更新initialFontSizes为当前字号，这样下次调整就基于最新的字号
+        const range = currentSelectionRange;
+        if (range) {
+          const container = document.getElementById('styledText');
+          for (let i = range.start; i < range.end; i++) {
+            if (container.childNodes[i]) {
+              const currentSize = parseInt(container.childNodes[i].style.fontSize.replace('px', '')) || 35;
+              initialFontSizes[i] = currentSize;
+            }
+          }
+        }
+
+        document.getElementById('fontSize').value = '0';
+        document.getElementById('fontSizeValue').textContent = '0';
+      }, 100);
+    });
+
+    // 触摸结束后自动重置滑块到0，并更新初始字号为当前字号
+    fontSizeInput.addEventListener('touchend', function () {
+      setTimeout(() => {
+        // 更新initialFontSizes为当前字号，这样下次调整就基于最新的字号
+        const range = currentSelectionRange;
+        if (range) {
+          const container = document.getElementById('styledText');
+          for (let i = range.start; i < range.end; i++) {
+            if (container.childNodes[i]) {
+              const currentSize = parseInt(container.childNodes[i].style.fontSize.replace('px', '')) || 35;
+              initialFontSizes[i] = currentSize;
+            }
+          }
+        }
+
+        document.getElementById('fontSize').value = '0';
+        document.getElementById('fontSizeValue').textContent = '0';
+      }, 100);
+    }, { passive: true });
+
+    // 重置字号按钮：将增量重置为0
     document.getElementById('resetFontSizeBtn').onclick = function () {
-      document.getElementById('fontSize').value = '35';
-      document.getElementById('fontSizeValue').textContent = '35';
-      applySize();
+      document.getElementById('fontSize').value = '0';
+      document.getElementById('fontSizeValue').textContent = '0';
+      // 不需要调用 applySize，因为增量为0不会改变任何东西
     };
 
     // 重置颜色按钮
