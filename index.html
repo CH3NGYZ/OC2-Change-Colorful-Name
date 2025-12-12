@@ -24,10 +24,10 @@
       width: 100%;
       max-width: 100%;
       background: #fff;
-      border-radius: 0;
+      border-radius: 90;
       box-shadow: none;
       margin: 0;
-      padding: 20px 50px;
+      padding: 20px 20px;
       animation: fadeIn 0.6s ease;
       min-height: 100vh;
       box-sizing: border-box;
@@ -196,6 +196,17 @@
       box-shadow: 0 3px 5px rgba(27, 106, 201, 0.2);
     }
 
+    .counter {
+      text-align: center;
+      padding: 20px;
+      background: #fff;
+      position: absolute;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+    }
+
+
     /* 移动端适配 */
     @media (max-width: 768px) {
       .container {
@@ -292,8 +303,12 @@
         <button id="copyBtn" onclick="copyToClipboard()">立即复制代码!</button>
       </div>
     </div>
-  </div>
 
+    <div class="counter" id="counterDiv">
+      <a href="https://oc2-change-colorful-name.ch3ng.top/"><img alt="Hits"
+          src="https://hits.sh/ch3ngyz.github.io/oc2_change_colorful_name.html.svg?style=for-the-badge&label=%E6%9C%AC%E7%BD%91%E7%AB%99%E8%AE%BF%E9%97%AE%E6%80%BB%E6%95%B0" /></a>
+    </div>
+  </div>
   <script>
     var defaultColor = '#000000';
     var defaultFontSize = '35';
@@ -345,6 +360,7 @@
       document.getElementById('editorArea').style.display = 'block';
       document.getElementById('mainTitle').style.display = 'none';
       document.getElementById('mainSubtitle').style.display = 'none';
+      document.getElementById('counterDiv').style.display = 'none';
 
       renderSpanText(text);
     };
@@ -360,6 +376,7 @@
       document.getElementById('warning').style.display = 'none';
       document.getElementById('mainTitle').style.display = 'block';
       document.getElementById('mainSubtitle').style.display = 'block';
+      document.getElementById('counterDiv').style.display = 'block';
       currentSelectionRange = null;
     };
 
