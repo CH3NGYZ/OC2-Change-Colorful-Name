@@ -629,91 +629,64 @@
     function updateStyledTextSource() {
       const spans = document.querySelectorAll('#styledText span');
       let result = '';
-      let buffer = '';                     // 累积的纯文本
-      let activeSize = null;               // 当前已打开的 size 值（null 表示默认 35，未开 <size>）
-      let activeColor = null;              // 当前已打开的 color 值（null 表示默认黑，未开 <color>）
-
-      const flushBuffer = () => {
-        if (buffer === '') return;
-        result += buffer;
-        buffer = '';
-      };
+      let activeColor = null; // null means default
+      let activeSize = null;  // null means default
 
       spans.forEach((span, index) => {
         const char = span.textContent;
         const size = span.style.fontSize.replace('px', '');
         const color = rgbToHex(span.style.color);
 
-        const isLast = index === spans.length - 1;
+        const targetColor = color === defaultColor ? null : color;
+        const targetSize = size === defaultFontSize ? null : size;
 
-        // 1. 处理即将到来的 size 变化（包括最后一个字符后强制处理）
-        if (activeSize !== size || isLast) {
-          // 如果当前有缓冲区且颜色非默认，先关闭 color
-          if (activeColor !== null && buffer !== '') {
-            flushBuffer();
-            result += '</color>';
-            activeColor = null;
-          }
-
-          // 关闭旧的 size（如果有）
-          if (activeSize !== null && activeSize !== defaultFontSize) {
-            flushBuffer();  // 确保关闭前输出缓冲
+        // If color needs to change
+        if (activeColor !== targetColor) {
+          // Close inner size if it was open
+          if (activeSize !== null) {
             result += '</size>';
-          }
-
-          // 打开新的 size（如果需要）
-          if (size !== defaultFontSize) {
-            result += `<size=${size}>`;
-            activeSize = size;
-          } else {
             activeSize = null;
           }
-        }
-
-        // 2. 处理颜色变化
-        if (color !== activeColor) {
-          // 先输出缓冲区（使用旧颜色）
-          if (buffer !== '') {
-            if (activeColor !== null) {
-              flushBuffer();
-              result += '</color>';
-            } else {
-              flushBuffer();
-            }
+          // Close outer color if it was open
+          if (activeColor !== null) {
+            result += '</color>';
           }
-
-          // 打开新颜色（如果非默认）
-          if (color !== defaultColor) {
-            result += `<color=${color}>`;
-            activeColor = color;
-          } else {
-            activeColor = null;
+          // Open new color if needed
+          if (targetColor !== null) {
+            result += `<color=${targetColor}>`;
           }
+          activeColor = targetColor;
         }
 
-        // 3. 累积字符
-        buffer += char;
-
-        // 最后一个字符强制刷新缓冲区
-        if (isLast) {
-          flushBuffer();
+        // Now handle size change within the current color (or no color)
+        if (activeSize !== targetSize) {
+          // Close old size if it was open
+          if (activeSize !== null) {
+            result += '</size>';
+          }
+          // Open new size if needed
+          if (targetSize !== null) {
+            result += `<size=${targetSize}>`;
+          }
+          activeSize = targetSize;
         }
+
+        result += char;
       });
 
-      // 最终关闭所有可能残留的标签（从内到外）
+      // Final cleanup (Close in reverse order: size then color)
+      if (activeSize !== null) {
+        result += '</size>';
+      }
       if (activeColor !== null) {
         result += '</color>';
       }
-      if (activeSize !== null && activeSize !== defaultFontSize) {
-        result += '</size>';
-      }
 
       const output = document.getElementById('styledTextSource');
-      output.value = result.trim();
+      output.value = result;
 
       const warning = document.getElementById('warning');
       const copyBtn = document.getElementById('copyBtn');
-
       if (result.length > 127) {
         warning.style.display = 'block';
         copyBtn.style.display = 'none';
